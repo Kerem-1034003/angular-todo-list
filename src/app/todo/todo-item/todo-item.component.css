@@ -13,3 +13,8 @@ span {
 input:hover {
   cursor: pointer;
 }
+
+.completed {
+  text-decoration: line-through;
+  color: gray;
+}

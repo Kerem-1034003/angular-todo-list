@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { TodoService } from '../services/todo.service';
 import { Todo } from '../models/todo';
 
@@ -7,17 +7,36 @@ import { Todo } from '../models/todo';
   templateUrl: './todo-list.component.html',
   styleUrls: ['./todo-list.component.css'],
 })
-export class TodoListComponent {
-  constructor(private readonly todoService: TodoService) {}
+export class TodoListComponent implements OnInit {
+  todos: Todo[] = [];
 
-  todos = this.todoService.todos;
+  constructor(private todoService: TodoService) { }
 
-  updateTodo(todo: Todo) {
-    this.todoService.updateTodo(todo);
+  ngOnInit(): void {
+    this.loadTodos();
   }
 
-  async newTodo(title: string) {
-    await this.todoService.addTodo(title);
-    this.todos = this.todoService.todos;
+  loadTodos(): void {
+    this.todoService.getTodos().subscribe({
+      next: todos => this.todos = todos.slice(0, 10),
+      error: err => console.error('Error loading todos', err)
+    });
+  }
+
+  addTodo(title: string): void {
+    this.todoService.addTodo(title).subscribe({
+      next: todo => this.todos.push(todo),
+      error: err => console.error('Error adding todo', err)
+    });
+  }
+
+  updateTodo(todo: Todo): void {
+    this.todoService.updateTodo(todo).subscribe({
+      next: updated => {
+        const index = this.todos.findIndex(t => t.id === updated.id);
+        if (index !== -1) this.todos[index] = updated;
+      },
+      error: err => console.error('Error updating todo', err)
+    });
   }
 }
